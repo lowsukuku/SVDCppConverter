@@ -10,13 +10,23 @@ namespace Core
     [XmlRoot("device")]
     public class Device
     {
-        public string name;
-        [XmlArrayItem("peripheral")]
-        public List<Peripheral> peripherals;
+        [XmlElement(ElementName = "name")]
+        public string Name;
+        [XmlArray("peripherals"),XmlArrayItem("peripheral")]
+        public List<Peripheral> Peripherals;
     }
 
     public class Peripheral
     {
-        public string name;
+        [XmlElement(ElementName = "name")]
+        public string Name;
+        [XmlArray("registers"), XmlArrayItem("register")]
+        public List<Register> Registers;
+    }
+
+    public class Register
+    {
+        [XmlElement(ElementName = "name")]
+        public string Name;
     }
 }

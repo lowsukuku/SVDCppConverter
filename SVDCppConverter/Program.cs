@@ -13,13 +13,25 @@ namespace SVDCppConverter
     {
         static void Main(string[] args)
         {
-            string path = @"D:\Dev\Keil\ARM\PACK\Keil\STM32L1xx_DFP\1.2.0\SVD\STM32L1xx.svd";
+            string readpath = @"D:\Dev\Keil\ARM\PACK\Keil\STM32L1xx_DFP\1.2.0\SVD\STM32L1xx.svd";
             XmlSerializer serializer = new XmlSerializer(typeof(Device));
             Device device;
-            using (FileStream fs = File.OpenRead(path))
+            using (FileStream fs = File.OpenRead(readpath))
             {
                 device = (Device)serializer.Deserialize(fs);
-
+            }
+            string writepath = $"{device.Name}.h";
+            using (StreamWriter sw = File.CreateText(writepath))
+            {
+                foreach (var peripheral in device.Peripherals)
+                {
+                    sw.WriteLine($"class {peripheral.Name}\r\n{{");
+                    foreach (var register in peripheral.Registers)
+                    {
+                        sw.WriteLine($"\tvolatile unsigned int {register.Name};");
+                    }
+                    sw.WriteLine("};");
+                }
             }
         }
     }
