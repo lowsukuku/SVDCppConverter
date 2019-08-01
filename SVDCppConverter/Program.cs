@@ -13,25 +13,57 @@ namespace SVDCppConverter
     {
         static void Main(string[] args)
         {
-            string readpath = @"D:\Dev\Keil\ARM\PACK\Keil\STM32L1xx_DFP\1.2.0\SVD\STM32L1xx.svd";
-            XmlSerializer serializer = new XmlSerializer(typeof(Device));
-            Device device;
-            using (FileStream fs = File.OpenRead(readpath))
+            if (!args.Any())
             {
-                device = (Device)serializer.Deserialize(fs);
+                Console.WriteLine("Usage: svdcppconverter <svd1> <svd2> ... <svdN>");
+                return;
             }
-            string writepath = $"{device.Name}.h";
-            using (StreamWriter sw = File.CreateText(writepath))
-            {
-                foreach (var peripheral in device.Peripherals)
-                {
-                    sw.WriteLine($"/* {peripheral.Description?.Replace('\n', ' ')} */\r\nclass {peripheral.Name}\r\n{{");
-                    foreach (var register in peripheral.Registers)
-                    {
 
-                        sw.WriteLine($"\tvolatile unsigned int {register.Name}; //{register.Description?.Replace('\n', ' ')}");
+            foreach (var filename in args)
+            {
+                Device device;
+                using (FileStream fs = File.OpenRead(filename))
+                {
+                    XmlSerializer serializer = new XmlSerializer(typeof(Device));
+                    device = (Device)serializer.Deserialize(fs);
+                }
+
+                var bitfields = device.Peripherals[49].Registers[1].Bitfields;
+                var pairs = bitfields.Zip(bitfields.Skip(1), (b1, b2) => new {b1, b2}).ToList();
+
+                var dummies = new List<Bitfield>();
+                foreach (var pair in pairs)
+                {
+                    if (pair.b2.Offset + pair.b2.Width != pair.b1.Offset)
+                    {
+                        var description = "// Dummy";
+                        var name = $"Dummy{dummies.Count}";
+                        var offset = pair.b2.Offset + pair.b2.Width;
+                        var width = pair.b1.Offset - offset;
+
+                        dummies.Add(new Bitfield
+                        {
+                            Description = description,
+                            Name = name,
+                            Offset = offset,
+                            Width = width
+                        });
                     }
-                    sw.WriteLine("};");
+                }
+
+                string writepath = $"{device.Name}.h";
+                using (StreamWriter sw = File.CreateText(writepath))
+                {
+                    foreach (var peripheral in device.Peripherals)
+                    {
+                        sw.WriteLine($"/* {peripheral.Description?.Replace('\n', ' ')} */\r\nclass {peripheral.Name}\r\n{{");
+                        foreach (var register in peripheral.Registers)
+                        {
+
+                            sw.WriteLine($"\tvolatile unsigned int {register.Name}; //{register.Description?.Replace('\n', ' ')}");
+                        }
+                        sw.WriteLine("};");
+                    }
                 }
             }
         }

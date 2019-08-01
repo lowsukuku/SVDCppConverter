@@ -14,6 +14,8 @@ namespace Core
         public string Name;
         [XmlArray("peripherals"),XmlArrayItem("peripheral")]
         public List<Peripheral> Peripherals;
+
+        public override string ToString() => Name;
     }
 
     public class Peripheral
@@ -24,6 +26,14 @@ namespace Core
         public string Description;
         [XmlArray("registers"), XmlArrayItem("register")]
         public List<Register> Registers;
+
+        public override string ToString()
+        {
+            if (string.IsNullOrWhiteSpace(Description))
+                return $"{Name}";
+
+            return $"{Name}: {Description}";
+        }
     }
 
     public class Register
@@ -34,6 +44,14 @@ namespace Core
         public string Description;
         [XmlArray("fields"), XmlArrayItem("field")]
         public List<Bitfield> Bitfields;
+
+        public override string ToString()
+        {
+            if (string.IsNullOrWhiteSpace(Description))
+                return $"{Name}";
+
+            return $"{Name}: {Description}";
+        }
     }
 
     public class Bitfield
@@ -43,8 +61,16 @@ namespace Core
         [XmlElement(ElementName = "description")]
         public string Description;
         [XmlElement(ElementName = "bitWidth")]
-        public string Width;
+        public int Width;
         [XmlElement(ElementName = "bitOffset")]
-        public string Offset;
+        public int Offset;
+
+        public override string ToString()
+        {
+            if (string.IsNullOrWhiteSpace(Description))
+                return $"{Name}; Offset {Offset}; Width {Width}";
+
+            return $"{Name}: {Description}; Offset {Offset}; Width {Width}";
+        }
     }
 }
