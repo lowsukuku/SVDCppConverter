@@ -20,6 +20,8 @@ namespace Core
     {
         [XmlElement(ElementName = "name")]
         public string Name;
+        [XmlElement(ElementName = "description")]
+        public string Description;
         [XmlArray("registers"), XmlArrayItem("register")]
         public List<Register> Registers;
     }
@@ -28,5 +30,21 @@ namespace Core
     {
         [XmlElement(ElementName = "name")]
         public string Name;
+        [XmlElement(ElementName = "description")]
+        public string Description;
+        [XmlArray("fields"), XmlArrayItem("field")]
+        public List<Bitfield> Bitfields;
+    }
+
+    public class Bitfield
+    {
+        [XmlElement(ElementName = "name")]
+        public string Name;
+        [XmlElement(ElementName = "description")]
+        public string Description;
+        [XmlElement(ElementName = "bitWidth")]
+        public string Width;
+        [XmlElement(ElementName = "bitOffset")]
+        public string Offset;
     }
 }

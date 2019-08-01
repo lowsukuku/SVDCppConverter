@@ -25,10 +25,11 @@ namespace SVDCppConverter
             {
                 foreach (var peripheral in device.Peripherals)
                 {
-                    sw.WriteLine($"class {peripheral.Name}\r\n{{");
+                    sw.WriteLine($"/* {peripheral.Description?.Replace('\n', ' ')} */\r\nclass {peripheral.Name}\r\n{{");
                     foreach (var register in peripheral.Registers)
                     {
-                        sw.WriteLine($"\tvolatile unsigned int {register.Name};");
+
+                        sw.WriteLine($"\tvolatile unsigned int {register.Name}; //{register.Description?.Replace('\n', ' ')}");
                     }
                     sw.WriteLine("};");
                 }
