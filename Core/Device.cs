@@ -105,16 +105,44 @@ namespace Core
                 .Select(s => s.Trim());
             var comment = string.Join(' ', oneStringDescription ?? new string[0]);
 
-            sb.Append(' ', 8)
-                .Append($"volatile unsigned int {Name};");
-
-            if (!string.IsNullOrWhiteSpace(comment))
+            if (Bitfields.Any())
             {
-                sb.AppendLine($" // {comment}");
+                sb.Append(' ', 8)
+                    .AppendLine("union")
+                    .Append(' ', 8)
+                    .AppendLine("{")
+                    .Append(' ', 12)
+                    .AppendLine($"volatile unsigned int {Name};")
+                    .AppendLine()
+                    .Append(' ', 12)
+                    .AppendLine("struct")
+                    .Append(' ', 12)
+                    .AppendLine("{");
+
+                foreach (var bitfield in Bitfields)
+                {
+                    sb.Append(' ', 16)
+                        .AppendLine($"volatile unsigned int {bitfield.Name} : {bitfield.Width}");
+                }
+
+                sb.Append(' ', 12)
+                    .AppendLine("};")
+                    .Append(' ', 8)
+                    .AppendLine("};");
             }
             else
             {
-                sb.AppendLine();
+                sb.Append(' ', 8)
+                    .Append($"volatile unsigned int {Name};");
+
+                if (!string.IsNullOrWhiteSpace(comment))
+                {
+                    sb.AppendLine($" // {comment}");
+                }
+                else
+                {
+                    sb.AppendLine();
+                }
             }
 
             return sb.ToString();
