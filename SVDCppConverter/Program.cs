@@ -45,35 +45,46 @@ namespace SVDCppConverter
             {
                 foreach (var register in peripheral.Registers)
                 {
-                    var bitFields = register.Bitfields;
-
+                    if (register.Bitfields.Any())
                     {
-                        var pairs = bitFields.Zip(bitFields.Skip(1), (b1, b2) => new { b1, b2 }).ToList();
+                        var bitfields = register.Bitfields.OrderByDescending(b => b.Offset).ToList();
+
+                        var pairs = bitfields.Zip(bitfields.Skip(1), (b1, b2) => new { b1, b2 }).ToList();
 
                         var dummies = new List<Bitfield>();
                         foreach (var pair in pairs)
                         {
-                            if (pair.b2.Offset + pair.b2.Width != pair.b1.Offset)
+                            var nextBitfieldOffset = pair.b2.Offset + pair.b2.Width;
+                            if (nextBitfieldOffset != pair.b1.Offset)
                             {
-                                var description = "// Dummy";
-                                var name = $"Dummy{dummies.Count}";
-                                var offset = pair.b2.Offset + pair.b2.Width;
-                                var width = pair.b1.Offset - offset;
-
                                 dummies.Add(new Bitfield
                                 {
-                                    Description = description,
-                                    Name = name,
-                                    Offset = offset,
-                                    Width = width
-                                });
+                                    Description = string.Empty,
+                                    Name = string.Empty,
+                                    Offset = nextBitfieldOffset,
+                                    Width = pair.b1.Offset - nextBitfieldOffset
+                            });
                             }
                         }
 
-                        bitFields.AddRange(dummies);
-                    }
+                        bitfields.AddRange(dummies);
 
-                    register.Bitfields = bitFields.OrderByDescending(b => b.Offset).ToList();
+                        var orderedBitfields = bitfields.OrderBy(b => b.Offset).ToList();
+
+                        var firstBitfield = orderedBitfields.FirstOrDefault();
+                        if (!(firstBitfield is null) && firstBitfield.Offset != 0)
+                        {
+                            orderedBitfields.Insert(0, new Bitfield
+                            {
+                                Description = string.Empty,
+                                Name = string.Empty,
+                                Offset = 0,
+                                Width = firstBitfield.Offset
+                            });
+                        }
+
+                        register.Bitfields = orderedBitfields;
+                    }
                 }
             }
         }
