@@ -25,11 +25,9 @@ namespace Core
                 .AppendLine()
                 .AppendLine("#include <cstdint>")
                 .AppendLine()
-                .AppendLine($"namespace {Name}")
-                .AppendLine("{")
+                .AppendLine($"namespace {Name} {{")
                 .Append(' ', 4)
-                .AppendLine("typedef uint32_t u32;")
-                .AppendLine();
+                .AppendLine("using u32 = uint32_t;");
 
             foreach (var peripheral in Peripherals)
             {
