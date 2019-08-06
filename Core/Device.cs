@@ -38,6 +38,17 @@ namespace Core
 
             return sb.ToString();
         }
+
+        public void FillPeripheralDerivatives()
+        {
+            var derivativePeripherals = Peripherals.Where(p => !string.IsNullOrEmpty(p.BasePeripheralName));
+            foreach (var peripheral in derivativePeripherals)
+            {
+                peripheral.Registers = Peripherals
+                    .First(p => p.Name.Equals(peripheral.BasePeripheralName))
+                    .Registers;
+            }
+        }
     }
 
     public class Peripheral
@@ -107,39 +118,15 @@ namespace Core
                 .Select(s => s.Trim());
             var comment = string.Join(' ', oneStringDescription ?? new string[0]);
 
-            if (Bitfields.Any())
+            sb.Append(' ', 8).Append($"volatile u32 {Name};");
+
+            if (!string.IsNullOrWhiteSpace(comment))
             {
-                sb.Append(' ', 8)
-                    .AppendLine("union {")
-                    .Append(' ', 12)
-                    .AppendLine($"volatile u32 {Name};")
-                    .AppendLine()
-                    .Append(' ', 12)
-                    .AppendLine("struct {");
-
-                foreach (var bitfield in Bitfields)
-                {
-                    sb.Append(bitfield.GenerateCppHeader());
-                }
-
-                sb.Append(' ', 12)
-                    .AppendLine($"}} {Name}Bits;")
-                    .Append(' ', 8)
-                    .AppendLine("};");
+                sb.AppendLine($" // {comment}");
             }
             else
             {
-                sb.Append(' ', 8)
-                    .Append($"volatile u32 {Name};");
-
-                if (!string.IsNullOrWhiteSpace(comment))
-                {
-                    sb.AppendLine($" // {comment}");
-                }
-                else
-                {
-                    sb.AppendLine();
-                }
+                sb.AppendLine();
             }
 
             return sb.ToString();
