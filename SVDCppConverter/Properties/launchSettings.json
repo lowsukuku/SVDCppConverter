@@ -3,6 +3,10 @@
     "SVDCppConverter": {
       "commandName": "Project",
       "commandLineArgs": "E:\\Downloads\\Telegram\\STM32L1xx.svd"
+    },
+    "lowsukuku": {
+      "commandName": "Project",
+      "commandLineArgs": "D:\\Dev\\Keil\\ARM\\PACK\\Keil\\STM32L1xx_DFP\\1.2.0\\SVD\\STM32L1xx.svd"
     }
   }
 }
