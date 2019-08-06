@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SVDCppConverter": {
+      "commandName": "Project",
+      "commandLineArgs": "E:\\Downloads\\Telegram\\STM32L1xx.svd"
+    }
+  }
+}
