@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -66,6 +67,8 @@ namespace Core.Models
             {
                 XmlSerializer serializer = new XmlSerializer(typeof(Device));
                 var device = (Device)serializer.Deserialize(fs);
+
+                device.NormalizeDescriptions();
                 device.AddBitFieldsDummies();
                 device.Peripherals = device.Peripherals.OrderBy(p => p.BaseAddress).ToList();
 
@@ -85,15 +88,23 @@ namespace Core.Models
 
         public override string ToString() => Name;
 
-        private void FillPeripheralDerivatives()
+        private Device()
+        { }
+
+        private void NormalizeDescriptions()
         {
-            var derivativePeripherals = Peripherals.Where(p => !string.IsNullOrEmpty(p.BasePeripheralName));
-            foreach (var peripheral in derivativePeripherals)
+            Description = Description.ManyToOneLine();
+            foreach (var peripheral in Peripherals)
             {
-                var basePeripheral = Peripherals.First(p => p.Name.Equals(peripheral.BasePeripheralName));
-                peripheral.Registers = basePeripheral.Registers;
-                peripheral.Description = basePeripheral.Description;
-                peripheral.GroupName = basePeripheral.GroupName;
+                peripheral.Description = peripheral.Description.ManyToOneLine();
+                foreach (var register in peripheral.Registers)
+                {
+                    register.Description = register.Description.ManyToOneLine();
+                    foreach (var field in register.Fields)
+                    {
+                        field.Description = field.Description.ManyToOneLine();
+                    }
+                }
             }
         }
 
@@ -135,7 +146,16 @@ namespace Core.Models
             }
         }
 
-        private Device()
-        { }
+        private void FillPeripheralDerivatives()
+        {
+            var derivativePeripherals = Peripherals.Where(p => !string.IsNullOrEmpty(p.BasePeripheralName));
+            foreach (var peripheral in derivativePeripherals)
+            {
+                var basePeripheral = Peripherals.First(p => p.Name.Equals(peripheral.BasePeripheralName));
+                peripheral.Registers = basePeripheral.Registers;
+                peripheral.Description = basePeripheral.Description;
+                peripheral.GroupName = basePeripheral.GroupName;
+            }
+        }
     }
 }
