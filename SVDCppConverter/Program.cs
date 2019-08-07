@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Core.Models;
+using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Xml.Serialization;
-using Core;
 
 namespace SVDCppConverter
 {
@@ -21,19 +16,14 @@ namespace SVDCppConverter
 
             foreach (var filename in args)
             {
-                Device device;
-                using (FileStream fs = File.OpenRead(filename))
+                try
                 {
-                    XmlSerializer serializer = new XmlSerializer(typeof(Device));
-                    device = (Device)serializer.Deserialize(fs);
+                    Device device = Device.FromXmlFile(filename);
+                    //device.GenerateCppHeader();
                 }
-
-                device.FillPeripheralDerivatives();
-
-                string writepath = $"{device.Name}.h";
-                using (StreamWriter sw = File.CreateText(writepath))
+                catch (Exception e)
                 {
-                    sw.WriteLine(device.GenerateCppHeader());
+                    Console.WriteLine(e);
                 }
             }
         }
