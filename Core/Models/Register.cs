@@ -45,12 +45,19 @@ namespace Core.Models
 
             foreach (Field field in Fields)
             {
-                sb.AppendLine(
-                    $"                {field.Name} = {Math.Pow(2, field.Width) - 1}U << {field.Offset}, // {field.Description}");
+                sb.Append(field.GenerateMasks());
             }
 
             sb.AppendLine("            };")
-                .AppendLine(
+                .Append(GenerateFunctions());
+
+            return sb.ToString();
+        }
+
+        private string GenerateFunctions()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(
                     $"            constexpr {Name}Mask operator&({Name}Mask left, {Name}Mask right) {{")
                 .AppendLine(
                     $"                return ({Name}Mask)((u{Width})left & (u{Width})right);")
@@ -66,8 +73,17 @@ namespace Core.Models
                     $"                return ({Name}Mask)(~((u{Width})mask));")
                 .AppendLine("            }")
                 .AppendLine();
-
             return sb.ToString();
+        }
+
+        public string GenerateClassCode(string parentPeripheralName)
+        {
+            return $"            using {Name} = Core::Register<u{Width}, Core::RegisterMasks::{parentPeripheralName}::{Name}Mask>; // {Description}";
+        }
+
+        public string GenerateFieldsCode(string parentPeripheralName)
+        {
+            return $"            Registers::{parentPeripheralName}::{Name} {Name}; // {Description}";
         }
     }
 }

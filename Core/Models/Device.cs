@@ -76,6 +76,10 @@ namespace Core.Models
             foreach (var peripheral in device.Peripherals)
             {
                 peripheral.Registers = peripheral.Registers.OrderBy(r => r.AddressOffset).ToList();
+                foreach (Register register in peripheral.Registers)
+                {
+                    register.Fields = register.Fields.OrderBy(f => f.Offset).ToList();
+                }
             }
             device.FillPeripheralDerivatives();
             return device;

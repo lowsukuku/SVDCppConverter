@@ -37,6 +37,9 @@ namespace SVDCppConverter
                 Environment.Exit(-1);
             }
 
+            var currentFolder = Path.GetDirectoryName(Path.GetFullPath(svdFile));
+            Directory.SetCurrentDirectory(currentFolder);
+
             if (!string.IsNullOrWhiteSpace(outputFolder))
             {
                 if (!outputFolder.EndsWith("/") && !outputFolder.EndsWith("\\"))

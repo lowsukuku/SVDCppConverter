@@ -50,8 +50,23 @@ namespace Core.Models
                 .AppendLine("#include <cstdint>")
                 .AppendLine("#include \"Register.h\"")
                 .AppendLine()
+
                 .AppendLine("namespace Core {")
-                .AppendLine("    namespace RegisterMasks {")
+                .Append(GenerateRegisterMasks())
+                .Append(GenerateRegisters())
+                .Append(CreatePeripherals())
+                .AppendLine("}");
+
+            await using var peripheralFile = File.Create($"{Name}.h");
+            await using var peripheralHeader = new StreamWriter(peripheralFile, Encoding.UTF8);
+
+            await peripheralHeader.WriteAsync(sb, ct);
+        }
+
+        private string GenerateRegisterMasks()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("    namespace RegisterMasks {")
                 .AppendLine($"        namespace {Name} {{");
 
             foreach (Register register in Registers)
@@ -61,39 +76,46 @@ namespace Core.Models
 
             sb.AppendLine("        }")
                 .AppendLine("    }")
-                .AppendLine()
-                .AppendLine($"    namespace Registers {{")
+                .AppendLine();
+            return sb.ToString();
+        }
+
+        private string GenerateRegisters()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"    namespace Registers {{")
                 .AppendLine($"        namespace {Name} {{");
 
             foreach (Register register in Registers)
             {
-                sb.AppendLine(
-                    $"            using {register.Name} = Core::Register<u{register.Width}, Core::RegisterMasks::{Name}::{register.Name}Mask>; // {register.Description}");
+                sb.AppendLine(register.GenerateClassCode(Name));
             }
 
             sb.AppendLine("        }")
                 .AppendLine("    }")
-                .AppendLine()
-                .AppendLine($"    namespace Peripherals {{")
+                .AppendLine();
+            return sb.ToString();
+        }
+
+        private string CreatePeripherals()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"    namespace Peripherals {{")
                 .AppendLine($"        class {Name} {{")
                 .AppendLine("        public:")
                 .AppendLine($"            {Name}() = delete;");
 
             foreach (Register register in Registers)
             {
-                sb.AppendLine($"            Registers::{Name}::{register.Name} {register.Name};");
+                sb.AppendLine(register.GenerateFieldsCode(Name));
             }
 
             sb.AppendLine("        };")
                 .AppendLine("    }")
                 .AppendLine()
-                .AppendLine($"    Peripherals::{Name} * const {Name} = reinterpret_cast<Peripherals::{Name} *>({BaseAddressString});")
-                .AppendLine("}");
-
-            await using var peripheralFile = File.Create($"{Name}.h");
-            await using var peripheralHeader = new StreamWriter(peripheralFile, Encoding.UTF8);
-
-            await peripheralHeader.WriteAsync(sb, ct);
+                .AppendLine(
+                    $"    Peripherals::{Name} * const {Name.ToLower()} = reinterpret_cast<Peripherals::{Name} *>({BaseAddressString});");
+            return sb.ToString();
         }
     }
 }
