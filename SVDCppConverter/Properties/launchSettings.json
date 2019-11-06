@@ -2,7 +2,7 @@
   "profiles": {
     "SVDCppConverter": {
       "commandName": "Project",
-      "commandLineArgs": "E:\\Downloads\\Telegram\\STM32L1xx.svd E:\\Downloads\\Firefox\\en.stm32l1_svd\\STM32L1_svd_V1.2\\STM32L151.svd"
+      "commandLineArgs": "E:\\Downloads\\STM32L1xx.svd"
     },
     "lowsukuku": {
       "commandName": "Project",

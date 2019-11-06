@@ -22,6 +22,16 @@ namespace Core.Models
         [XmlIgnore]
         public uint AddressOffset { get; set; }
 
+        [XmlElement(ElementName = "size")]
+        public string SizeString
+        {
+            get => string.Concat("0x", Width.ToString("X8"));
+            set => Width = Convert.ToUInt32(value, 16);
+        }
+
+        [XmlIgnore]
+        public uint Width { get; set; }
+
         [XmlArray("fields"), XmlArrayItem("field")]
         public List<Field> Fields;
 
