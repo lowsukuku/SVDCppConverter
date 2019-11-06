@@ -208,40 +208,40 @@ namespace Core.Models
 
         private void AddBitFieldsDummies()
         {
-            foreach (var peripheral in Peripherals)
-            {
-                foreach (var register in peripheral.Registers)
-                {
-                    if (register.Fields.Any())
-                    {
-                        var fields = register.Fields.OrderByDescending(b => b.Offset).ToList();
+            //foreach (var peripheral in Peripherals)
+            //{
+            //    foreach (var register in peripheral.Registers)
+            //    {
+            //        if (register.Fields.Any())
+            //        {
+            //            var fields = register.Fields.OrderByDescending(b => b.Offset).ToList();
 
-                        var fieldPairs = fields.Zip(fields.Skip(1), (b1, b2) => new { b1, b2 }).ToList();
+            //            var fieldPairs = fields.Zip(fields.Skip(1), (b1, b2) => new { b1, b2 }).ToList();
 
-                        var dummies = new List<Field>();
-                        foreach (var pair in fieldPairs)
-                        {
-                            var nextFieldOffset = pair.b2.Offset + pair.b2.Width;
-                            if (nextFieldOffset != pair.b1.Offset)
-                            {
-                                dummies.Add(Field.GetDummy(width: pair.b1.Offset - nextFieldOffset, offset: nextFieldOffset));
-                            }
-                        }
+            //            var dummies = new List<Field>();
+            //            foreach (var pair in fieldPairs)
+            //            {
+            //                var nextFieldOffset = pair.b2.Offset + pair.b2.Width;
+            //                if (nextFieldOffset != pair.b1.Offset)
+            //                {
+            //                    dummies.Add(Field.GetDummy(width: pair.b1.Offset - nextFieldOffset, offset: nextFieldOffset));
+            //                }
+            //            }
 
-                        fields.AddRange(dummies);
+            //            fields.AddRange(dummies);
 
-                        var orderedFields = fields.OrderBy(b => b.Offset).ToList();
+            //            var orderedFields = fields.OrderBy(b => b.Offset).ToList();
 
-                        var firstField = orderedFields.FirstOrDefault();
-                        if (!(firstField is null) && firstField.Offset != 0)
-                        {
-                            orderedFields.Insert(0, Field.GetDummy(width: firstField.Offset, offset: 0));
-                        }
+            //            var firstField = orderedFields.FirstOrDefault();
+            //            if (!(firstField is null) && firstField.Offset != 0)
+            //            {
+            //                orderedFields.Insert(0, Field.GetDummy(width: firstField.Offset, offset: 0));
+            //            }
 
-                        register.Fields = orderedFields;
-                    }
-                }
-            }
+            //            register.Fields = orderedFields;
+            //        }
+            //    }
+            //}
         }
 
         private void FillPeripheralDerivatives()
