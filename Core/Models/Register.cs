@@ -14,17 +14,17 @@ namespace Core.Models
         public string Description;
 
         [XmlElement(ElementName = "addressOffset")]
-        public string AddressOffsetString
+        public string AddressOffsetBytesString
         {
-            get => string.Concat("0x", AddressOffset.ToString("X8"));
-            set => AddressOffset = Convert.ToUInt32(value, 16);
+            get => string.Concat("0x", AddressOffsetBytes.ToString("X8"));
+            set => AddressOffsetBytes = Convert.ToUInt32(value, 16);
         }
 
         [XmlIgnore]
-        public uint AddressOffset { get; set; }
+        public uint AddressOffsetBytes { get; set; }
 
         [XmlElement(ElementName = "size")]
-        public string SizeString
+        public string WidthString
         {
             get => string.Concat("0x", Width.ToString("X8"));
             set => Width = Convert.ToUInt32(value, 16);
@@ -38,20 +38,27 @@ namespace Core.Models
 
         public override string ToString() => string.IsNullOrWhiteSpace(Description) ? $"{Name}" : $"{Name}: {Description}";
 
-        public string GenerateRegisterMasks()
+        public string GenerateRegisterMask()
         {
-            var sb = new StringBuilder();
-            sb.AppendLine($"            enum class {Name}Mask : u{Width} {{");
-
-            foreach (Field field in Fields)
+            if (!string.IsNullOrWhiteSpace(Name))
             {
-                sb.Append(field.GenerateMasks());
+                var sb = new StringBuilder();
+                sb.AppendLine($"            enum class {Name}Mask : u{Width} {{");
+
+                foreach (Field field in Fields)
+                {
+                    sb.Append(field.GenerateMasks());
+                }
+
+                sb.AppendLine("            };")
+                    .Append(GenerateFunctions());
+
+                return sb.ToString();
             }
-
-            sb.AppendLine("            };")
-                .Append(GenerateFunctions());
-
-            return sb.ToString();
+            else
+            {
+                return string.Empty;
+            }
         }
 
         private string GenerateFunctions()
@@ -84,6 +91,17 @@ namespace Core.Models
         public string GenerateFieldsCode(string parentPeripheralName)
         {
             return $"            Registers::{parentPeripheralName}::{Name} {Name}; // {Description}";
+        }
+
+        public static Register GetDummy(uint widthBits, uint offsetBytes)
+        {
+            return new Register
+            {
+                Description = string.Empty,
+                Name = string.Empty,
+                Width = widthBits,
+                AddressOffsetBytes = offsetBytes
+            };
         }
     }
 }

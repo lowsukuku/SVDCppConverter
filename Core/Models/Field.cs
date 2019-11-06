@@ -15,17 +15,6 @@ namespace Core.Models
         [XmlElement(ElementName = "bitOffset")]
         public int Offset;
 
-        public static Field GetDummy(int width, int offset)
-        {
-            return new Field
-            {
-                Description = string.Empty,
-                Name = string.Empty,
-                Width = width,
-                Offset = offset
-            };
-        }
-
         public override string ToString()
         {
             if (string.IsNullOrWhiteSpace(Description))

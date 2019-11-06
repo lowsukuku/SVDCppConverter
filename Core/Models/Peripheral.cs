@@ -59,7 +59,6 @@ namespace Core.Models
 
             await using var peripheralFile = File.Create($"{Name}.h");
             await using var peripheralHeader = new StreamWriter(peripheralFile, Encoding.UTF8);
-
             await peripheralHeader.WriteAsync(sb, ct);
         }
 
@@ -71,7 +70,7 @@ namespace Core.Models
 
             foreach (Register register in Registers)
             {
-                sb.Append(register.GenerateRegisterMasks());
+                sb.Append(register.GenerateRegisterMask());
             }
 
             sb.AppendLine("        }")
