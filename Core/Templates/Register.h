@@ -1,6 +1,8 @@
 ﻿#include <cstdint>
 #include <type_traits>
 
+#pragma once
+
 namespace Core {
     using u16 = uint16_t;
     using u32 = uint32_t;
