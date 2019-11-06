@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Xml.Serialization;
 
 namespace Core.Models
@@ -36,5 +37,37 @@ namespace Core.Models
         public List<Field> Fields;
 
         public override string ToString() => string.IsNullOrWhiteSpace(Description) ? $"{Name}" : $"{Name}: {Description}";
+
+        public string GenerateRegisterMasks()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"            enum class {Name}Mask : u{Width} {{");
+
+            foreach (Field field in Fields)
+            {
+                sb.AppendLine(
+                    $"                {field.Name} = {Math.Pow(2, field.Width) - 1}U << {field.Offset}, // {field.Description}");
+            }
+
+            sb.AppendLine("            };")
+                .AppendLine(
+                    $"            constexpr {Name}Mask operator&({Name}Mask left, {Name}Mask right) {{")
+                .AppendLine(
+                    $"                return ({Name}Mask)((u{Width})left & (u{Width})right);")
+                .AppendLine("            }")
+                .AppendLine(
+                    $"            constexpr {Name}Mask operator|({Name}Mask left, {Name}Mask right) {{")
+                .AppendLine(
+                    $"                return ({Name}Mask)((u{Width})left | (u{Width})right);")
+                .AppendLine("            }")
+                .AppendLine(
+                    $"            constexpr {Name}Mask operator~({Name}Mask mask) {{")
+                .AppendLine(
+                    $"                return ({Name}Mask)(~((u{Width})mask));")
+                .AppendLine("            }")
+                .AppendLine();
+
+            return sb.ToString();
+        }
     }
 }

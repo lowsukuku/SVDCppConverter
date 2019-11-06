@@ -1,8 +1,6 @@
 ﻿using Core.Models;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,7 +15,12 @@ namespace SVDCppConverter
 
             using var cts = new CancellationTokenSource();
 
-            Console.CancelKeyPress += (_, __) => cts.Cancel();
+            Console.CancelKeyPress += (_, __) =>
+            {
+                cts.Cancel();
+                Console.WriteLine("Cancel command called");
+                Environment.Exit(1);
+            };
 
             if (args.Length == 2)
             {
@@ -48,7 +51,7 @@ namespace SVDCppConverter
                 Device device = Device.FromXmlFile(svdFile);
                 if (!string.IsNullOrWhiteSpace(outputFolder))
                     Directory.SetCurrentDirectory(outputFolder);
-                
+
                 await device.GenerateCppHeaderAsync(cts.Token);
             }
             catch (Exception e)
