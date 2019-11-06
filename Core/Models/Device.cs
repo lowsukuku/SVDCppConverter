@@ -104,8 +104,12 @@ namespace Core.Models
 
             await using var file = File.Create($"{Name}.h");
             await using var header = new StreamWriter(file, Encoding.UTF8);
-
             await header.WriteAsync(sb, ct);
+
+            var assembly = typeof(Device).Assembly;
+            await using var registerHeader = File.Create("Register.h");
+            using var resourceReader = new StreamReader(assembly.GetManifestResourceStream("Core.Templates.Register.h"));
+            await resourceReader.BaseStream.CopyToAsync(registerHeader, ct);
         }
 
         public override string ToString() => Name;
