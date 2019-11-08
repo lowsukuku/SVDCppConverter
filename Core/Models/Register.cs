@@ -51,7 +51,7 @@ namespace Core.Models
                 }
 
                 sb.AppendLine("            };")
-                    .Append(GenerateFunctions());
+                    .Append(GenerateBitOperations());
 
                 return sb.ToString();
             }
@@ -83,7 +83,7 @@ namespace Core.Models
             };
         }
 
-        private string GenerateFunctions()
+        private string GenerateBitOperations()
         {
             var sb = new StringBuilder();
             sb.AppendLine(
