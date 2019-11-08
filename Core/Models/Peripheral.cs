@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,6 +37,24 @@ namespace Core.Models
         public List<Register> Registers;
 
         public override string ToString() => string.IsNullOrWhiteSpace(Description) ? $"{Name}" : $"{Name}: {Description}";
+        
+        public void AddDummyRegisters()
+        {
+            if (Registers.Any())
+            {
+                var dummies = GetDummyRegisters();
+                Registers.AddRange(dummies);
+                Registers = Registers.OrderBy(r => r.Offset.Bytes).ToList();
+
+                Register firstRegister = Registers.FirstOrDefault();
+                if (!(firstRegister is null) && firstRegister.Offset.Bytes != 0)
+                {
+                    Registers.Insert(0, Register.GetDummy(Width.FromBytes(firstRegister.Offset.Bytes), Offset.FromBytes(0)));
+                }
+
+                RenameDummyRegisters();
+            }
+        }
 
         public async Task GenerateCppHeaderAsync(CancellationToken ct)
         {
@@ -60,6 +79,36 @@ namespace Core.Models
             await using var peripheralFile = File.Create($"{Name}.h");
             await using var peripheralHeader = new StreamWriter(peripheralFile, Encoding.UTF8);
             await peripheralHeader.WriteAsync(sb, ct);
+        }
+
+        private List<Register> GetDummyRegisters()
+        {
+            var registersGroupsSortedByOffset = Registers.GroupBy(r => r.Offset).OrderByDescending(g => g.Key.Bytes);
+            var registerGroupsPairs =
+                registersGroupsSortedByOffset.Zip(registersGroupsSortedByOffset.Skip(1), (g1, g2) => new { g1, g2 });
+
+            var dummies = new List<Register>();
+            foreach (var pair in registerGroupsPairs)
+            {
+                var nextRegisterOffset = Offset.FromBytes(pair.g2.Key.Bytes + pair.g2.First().Width.Bytes);
+                if (nextRegisterOffset == pair.g1.Key)
+                    continue;
+                var nextRegisterWidth = Width.FromBytes(pair.g1.Key.Bytes - nextRegisterOffset.Bytes);
+                dummies.Add(Register.GetDummy(nextRegisterWidth, nextRegisterOffset));
+            }
+
+            return dummies;
+        }
+
+        private void RenameDummyRegisters()
+        {
+            var dummies = Registers.Where(r => string.IsNullOrWhiteSpace(r.Name));
+            foreach (var dummy in dummies)
+            {
+                var name = $"Reserved_{dummy.Offset.Bytes / 4}";
+                dummy.Name = name;
+                dummy.Description = name;
+            }
         }
 
         private string GenerateRegisterMasks()

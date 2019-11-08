@@ -75,7 +75,7 @@ namespace Core.Models
 
             foreach (var peripheral in device.Peripherals)
             {
-                peripheral.Registers = peripheral.Registers.OrderBy(r => r.AddressOffsetBytes).ToList();
+                peripheral.Registers = peripheral.Registers.OrderBy(r => r.Offset.Bytes).ToList();
                 foreach (Register register in peripheral.Registers)
                 {
                     register.Fields = register.Fields.OrderBy(f => f.Offset).ToList();
@@ -90,31 +90,7 @@ namespace Core.Models
         {
             foreach (Peripheral peripheral in Peripherals)
             {
-                if (peripheral.Registers.Any())
-                {
-                    var registers = peripheral.Registers.OrderByDescending(r => r.AddressOffsetBytes).ToList();
-                    var registerPairs = registers.Zip(registers.Skip(1), (r1, r2) => new { r1, r2 }).ToList();
-
-                    var dummies = new List<Register>();
-                    foreach (var pair in registerPairs)
-                    {
-                        var nextRegisterOffsetBytes = pair.r2.AddressOffsetBytes + pair.r2.Width/8;
-                        if (nextRegisterOffsetBytes != pair.r1.AddressOffsetBytes)
-                        {
-                            dummies.Add(Register.GetDummy(widthBits: (pair.r1.AddressOffsetBytes - nextRegisterOffsetBytes) * 8, offsetBytes: nextRegisterOffsetBytes));
-                        }
-                    }
-                    registers.AddRange(dummies);
-                    var orderedRegisters = registers.OrderBy(r => r.AddressOffsetBytes).ToList();
-
-                    var firstRegister = orderedRegisters.FirstOrDefault();
-                    if (!(firstRegister is null) && firstRegister.AddressOffsetBytes != 0)
-                    {
-                        orderedRegisters.Insert(0, Register.GetDummy(widthBits: firstRegister.AddressOffsetBytes * 8, offsetBytes: 0));
-                    }
-
-                    peripheral.Registers = orderedRegisters;
-                }
+                peripheral.AddDummyRegisters();
             }
         }
 
