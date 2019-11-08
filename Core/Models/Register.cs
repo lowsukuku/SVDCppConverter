@@ -61,28 +61,6 @@ namespace Core.Models
             }
         }
 
-        private string GenerateFunctions()
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine(
-                    $"            constexpr {Name}Mask operator&({Name}Mask left, {Name}Mask right) {{")
-                .AppendLine(
-                    $"                return ({Name}Mask)((u{Width.Bits})left & (u{Width.Bits})right);")
-                .AppendLine("            }")
-                .AppendLine(
-                    $"            constexpr {Name}Mask operator|({Name}Mask left, {Name}Mask right) {{")
-                .AppendLine(
-                    $"                return ({Name}Mask)((u{Width.Bits})left | (u{Width.Bits})right);")
-                .AppendLine("            }")
-                .AppendLine(
-                    $"            constexpr {Name}Mask operator~({Name}Mask mask) {{")
-                .AppendLine(
-                    $"                return ({Name}Mask)(~((u{Width.Bits})mask));")
-                .AppendLine("            }")
-                .AppendLine();
-            return sb.ToString();
-        }
-
         public string GenerateClassCode(string parentPeripheralName)
         {
             return $"            using {Name} = Core::Register<u{Width.Bits}, Core::RegisterMasks::{parentPeripheralName}::{Name}Mask>; // {Description}";
@@ -103,6 +81,28 @@ namespace Core.Models
                 Offset = offset,
                 Fields = new List<Field>()
             };
+        }
+
+        private string GenerateFunctions()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(
+                    $"            constexpr {Name}Mask operator&({Name}Mask left, {Name}Mask right) {{")
+                .AppendLine(
+                    $"                return ({Name}Mask)((u{Width.Bits})left & (u{Width.Bits})right);")
+                .AppendLine("            }")
+                .AppendLine(
+                    $"            constexpr {Name}Mask operator|({Name}Mask left, {Name}Mask right) {{")
+                .AppendLine(
+                    $"                return ({Name}Mask)((u{Width.Bits})left | (u{Width.Bits})right);")
+                .AppendLine("            }")
+                .AppendLine(
+                    $"            constexpr {Name}Mask operator~({Name}Mask mask) {{")
+                .AppendLine(
+                    $"                return ({Name}Mask)(~((u{Width.Bits})mask));")
+                .AppendLine("            }")
+                .AppendLine();
+            return sb.ToString();
         }
     }
 }

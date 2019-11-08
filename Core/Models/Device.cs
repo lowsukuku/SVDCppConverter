@@ -71,11 +71,9 @@ namespace Core.Models
             var device = (Device)serializer.Deserialize(fs);
 
             device.NormalizeDescriptions();
-            device.Peripherals = device.Peripherals.OrderBy(p => p.BaseAddress).ToList();
 
             foreach (var peripheral in device.Peripherals)
             {
-                peripheral.Registers = peripheral.Registers.OrderBy(r => r.Offset.Bytes).ToList();
                 foreach (Register register in peripheral.Registers)
                 {
                     register.Fields = register.Fields.OrderBy(f => f.Offset).ToList();
@@ -84,14 +82,6 @@ namespace Core.Models
             device.AddDummyRegisters();
             device.FillPeripheralDerivatives();
             return device;
-        }
-
-        private void AddDummyRegisters()
-        {
-            foreach (Peripheral peripheral in Peripherals)
-            {
-                peripheral.AddDummyRegisters();
-            }
         }
 
         public async Task GenerateCppHeaderAsync(CancellationToken ct)
@@ -125,6 +115,14 @@ namespace Core.Models
 
         private Device()
         { }
+
+        private void AddDummyRegisters()
+        {
+            foreach (Peripheral peripheral in Peripherals)
+            {
+                peripheral.AddDummyRegisters();
+            }
+        }
 
         private void NormalizeDescriptions()
         {
