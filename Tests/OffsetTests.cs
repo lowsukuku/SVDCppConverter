@@ -48,5 +48,33 @@ namespace Tests
             offset = right + left;
             Assert.AreEqual(3, offset.Bytes);
         }
+
+        [Test]
+        public void CreateFrom1And2Bytes_SubGetsMinus1Byte()
+        {
+            var left = Offset.FromBytes(1);
+            var right = Offset.FromBytes(2);
+            var offset = left - right;
+            Assert.AreEqual(-1, offset.Bytes);
+        }
+
+        [Test]
+        public void CreateFrom2And1Bytes_SubGets1Byte()
+        {
+            var left = Offset.FromBytes(2);
+            var right = Offset.FromBytes(1);
+            var offset = left - right;
+            Assert.AreEqual(1, offset.Bytes);
+        }
+
+        [Test]
+        public void CreateFrom7Bits_TryGetBytesThrowsNonIntegerBytesException()
+        {
+            var offset= Offset.FromBits(7);
+            Assert.Throws<NonIntegerBytesException>(() =>
+            {
+                var bytes = offset.Bytes;
+            });
+        }
     }
 }
