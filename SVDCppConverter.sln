@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2026
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29503.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{206F08A7-F538-4EB6-AC07-9E31FA693838}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SVDCppConverter", "SVDCppConverter\SVDCppConverter.csproj", "{771BE0A5-753F-4506-AD2D-DF6079625278}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{D7231B33-6515-4622-A884-1508C4D8BA7F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{771BE0A5-753F-4506-AD2D-DF6079625278}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{771BE0A5-753F-4506-AD2D-DF6079625278}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{771BE0A5-753F-4506-AD2D-DF6079625278}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7231B33-6515-4622-A884-1508C4D8BA7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7231B33-6515-4622-A884-1508C4D8BA7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7231B33-6515-4622-A884-1508C4D8BA7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7231B33-6515-4622-A884-1508C4D8BA7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

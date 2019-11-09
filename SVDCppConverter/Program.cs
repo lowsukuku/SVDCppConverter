@@ -1,102 +1,65 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Core.Models;
+using System;
 using System.IO;
-using System.Xml.Serialization;
-using Core;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SVDCppConverter
 {
     class Program
     {
-        static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
-            if (!args.Any())
+            string svdFile = string.Empty;
+            string outputFolder = string.Empty;
+
+            using var cts = new CancellationTokenSource();
+
+            Console.CancelKeyPress += (_, __) =>
             {
-                Console.WriteLine("Usage: svdcppconverter <svd1> <svd2> ... <svdN>");
-                return;
+                cts.Cancel();
+                Console.WriteLine("Cancel command called");
+                Environment.Exit(1);
+            };
+
+            if (args.Length == 2)
+            {
+                svdFile = args[0];
+                outputFolder = args[1];
+            }
+            else if (args.Length == 1)
+            {
+                svdFile = args[0];
+            }
+            else
+            {
+                Console.WriteLine("Usage: svdcppconverter <svd1> [output folder]");
+                Environment.Exit(-1);
             }
 
-            foreach (var filename in args)
+            var currentFolder = Path.GetDirectoryName(Path.GetFullPath(svdFile));
+            Directory.SetCurrentDirectory(currentFolder);
+
+            if (!string.IsNullOrWhiteSpace(outputFolder))
             {
-                Device device;
-                using (FileStream fs = File.OpenRead(filename))
-                {
-                    XmlSerializer serializer = new XmlSerializer(typeof(Device));
-                    device = (Device)serializer.Deserialize(fs);
-                }
-
-                FillPeripheralDerivatives(device);
-                AddBitFieldsDummies(device);
-
-                string writepath = $"{device.Name}.h";
-                using (StreamWriter sw = File.CreateText(writepath))
-                {
-                    sw.WriteLine(device.GenerateCppHeader());
-                }
+                if (!outputFolder.EndsWith("/") && !outputFolder.EndsWith("\\"))
+                    outputFolder += "/";
+                outputFolder = Path.GetFullPath(outputFolder);
+                if (!Directory.Exists(outputFolder))
+                    Directory.CreateDirectory(outputFolder);
             }
-        }
 
-        private static void AddBitFieldsDummies(Device device)
-        {
-            foreach (var peripheral in device.Peripherals)
+            try
             {
-                foreach (var register in peripheral.Registers)
-                {
-                    if (register.Bitfields.Any())
-                    {
-                        var bitfields = register.Bitfields.OrderByDescending(b => b.Offset).ToList();
+                Device device = Device.FromXmlFile(svdFile);
+                if (!string.IsNullOrWhiteSpace(outputFolder))
+                    Directory.SetCurrentDirectory(outputFolder);
 
-                        var pairs = bitfields.Zip(bitfields.Skip(1), (b1, b2) => new { b1, b2 }).ToList();
-
-                        var dummies = new List<Bitfield>();
-                        foreach (var pair in pairs)
-                        {
-                            var nextBitfieldOffset = pair.b2.Offset + pair.b2.Width;
-                            if (nextBitfieldOffset != pair.b1.Offset)
-                            {
-                                dummies.Add(new Bitfield
-                                {
-                                    Description = string.Empty,
-                                    Name = string.Empty,
-                                    Offset = nextBitfieldOffset,
-                                    Width = pair.b1.Offset - nextBitfieldOffset
-                            });
-                            }
-                        }
-
-                        bitfields.AddRange(dummies);
-
-                        var orderedBitfields = bitfields.OrderBy(b => b.Offset).ToList();
-
-                        var firstBitfield = orderedBitfields.FirstOrDefault();
-                        if (!(firstBitfield is null) && firstBitfield.Offset != 0)
-                        {
-                            orderedBitfields.Insert(0, new Bitfield
-                            {
-                                Description = string.Empty,
-                                Name = string.Empty,
-                                Offset = 0,
-                                Width = firstBitfield.Offset
-                            });
-                        }
-
-                        register.Bitfields = orderedBitfields;
-                    }
-                }
+                await device.GenerateCppHeaderAsync(cts.Token);
             }
-        }
-
-        private static void FillPeripheralDerivatives(Device device)
-        {
-            var derivativePeripherals = device.Peripherals.Where(p => !string.IsNullOrEmpty(p.BasePeripheralName));
-            foreach (var peripheral in derivativePeripherals)
+            catch (Exception e)
             {
-                peripheral.Registers = device.Peripherals
-                    .First(p => p.Name.Equals(peripheral.BasePeripheralName))
-                    .Registers;
+                Console.WriteLine(e);
             }
         }
     }
